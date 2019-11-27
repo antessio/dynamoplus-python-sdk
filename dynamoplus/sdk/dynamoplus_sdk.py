@@ -240,7 +240,7 @@ class SDK(object):
         result = json.loads(response_body)
         connection.close()
         return result
-    def query_document_by_index(self,collection_name:str, index_name:str, example_document:dict):
+    def query_documents_by_index(self,collection_name:str, index_name:str, example_document:dict):
         # POST /dynamo_plus/<collection_name>/query/<query_id>
         #{ example }
         connection = self.get_connection()
@@ -255,6 +255,10 @@ class SDK(object):
         result = json.loads(response_body)
         connection.close()
         return result
+    def get_all_collections(self):
+        return self.query_all_documents("collection")
+    def get_indexes_by_collection_name(self, collection_name:str):
+        return self.query_documents_by_index("index","",{"collection":{"name": collection_name}})
     def query_all_documents(self,collection_name:str):
         # POST /dynamo_plus/<collection_name>/query
         #{}
