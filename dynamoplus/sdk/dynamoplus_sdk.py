@@ -1,9 +1,7 @@
 import http.client as http_client
-import getopt
 import typing
 import uuid
 
-import requests
 import logging
 import ssl
 import json
@@ -255,17 +253,20 @@ class SDK(object):
         result = json.loads(response_body)
         connection.close()
         return result
-    def get_all_collections(self):
-        return self.query_all_documents("collection")
-    def get_indexes_by_collection_name(self, collection_name:str):
-        return self.query_documents_by_index("index","",{"collection":{"name": collection_name}})
-    def query_all_documents(self,collection_name:str):
+    def get_all_collections(self,limit:int = None, start_from:str = None):
+        return self.query_all_documents("collection",limit, start_from)
+    def get_indexes_by_collection_name(self, collection_name:str, limit:int = None, start_from:str = None):
+        return self.query_documents_by_index("index","",{"collection":{"name": collection_name}},limit,start_from)
+    def query_all_documents(self,collection_name:str, limit:int = None, start_from:str = None):
         # POST /dynamo_plus/<collection_name>/query
         #{}
         connection = self.get_connection()
-        json_data = json.dumps({})
+        example_document = {}
+        if start_from:
+            example_document["last_key"] = start_from
+        json_data = json.dumps(example_document)
         headers = {'Content-type': 'application/json'}
-        connection.request("POST", "/{}/dynamoplus/{}/query".format(self.environment, collection_name),json_data,headers)
+        connection.request("POST", "/{}/dynamoplus/{}/query{}".format(self.environment, collection_name,("?limit={}".format(limit) if limit else "")),json_data,headers)
         response = connection.getresponse()
         logging.info("response status {}".format(response.status))
         response_body = response.read().decode()
